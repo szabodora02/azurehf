@@ -4,7 +4,6 @@ import uuid
 from typing import Optional
 
 from fastapi import Depends, Request, Response, HTTPException
-from passlib.context import CryptContext
 from sqlmodel import Session, select
 
 from app.db import get_session
