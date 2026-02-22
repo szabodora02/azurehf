@@ -18,12 +18,25 @@ from app.auth import hash_password, verify_password, create_session, delete_sess
 
 app = FastAPI(title="Photo Album")
 
-# Static + Media kiszolgálás (lokális devhez)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.mount("/media", StaticFiles(directory="media"), name="media")
+# --- ÚTVONALAK ÉS MAPPÁK LÉTREHOZÁSA (AZURE KOMPATIBILIS) ---
+# BASE_DIR az 'app' mappa, ahol ez a main.py fájl fizikailag található
+BASE_DIR = Path(__file__).resolve().parent
+# ROOT_DIR a projekt gyökérkönyvtára (egy szinttel feljebb)
+ROOT_DIR = BASE_DIR.parent
 
-templates = Jinja2Templates(directory="app/templates")
+STATIC_DIR = BASE_DIR / "static"
+MEDIA_DIR = ROOT_DIR / "media"
+TEMPLATE_DIR = BASE_DIR / "templates"
 
+# Mappák létrehozása, ha nem léteznének (ez menti meg az Azure deploymentet!)
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+# Static + Media kiszolgálás (abszolút útvonalakkal)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
+
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 @app.on_event("startup")
 async def on_startup():
