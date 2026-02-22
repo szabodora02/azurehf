@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Feltöltés</h2>
+
+<div class="card">
+  <form action="/upload" method="post" enctype="multipart/form-data">
+    <div class="row">
+      <label>Név (max 40):</label>
+      <input name="name" maxlength="40" required>
+    </div>
+
+    <div class="row">
+      <label>Kép:</label>
+      <input name="image" type="file" accept="image/png,image/jpeg,image/webp" required>
+    </div>
+
+    <button type="submit">Feltöltés</button>
+  </form>
+
+  <p><small>Feltöltés csak belépve engedélyezett (különben 401/403).</small></p>
+</div>
+{% endblock %}

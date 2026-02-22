@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Fényképek listája</h2>
+
+<div class="row">
+  <strong>Rendezés:</strong>
+  <a href="/photos?order=date">Dátum szerint</a>
+  <a href="/photos?order=name">Név szerint</a>
+</div>
+
+{% if photos|length == 0 %}
+  <p>Nincs még feltöltött kép.</p>
+{% else %}
+  {% for p in photos %}
+    <div class="card row" style="justify-content:space-between;">
+      <div>
+        <div><strong>{{ p.name }}</strong></div>
+        <div>Feltöltve: {{ p.uploaded_at }}</div>
+      </div>
+      <div class="row">
+        <a href="/photos/{{ p.id }}">Megnyitás</a>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Fénykép</h2>
+
+<div class="card">
+  <div><strong>{{ photo.name }}</strong></div>
+  <div>Feltöltve: {{ photo.uploaded_at }}</div>
+  <hr>
+  <img src="{{ photo.image_url }}" alt="{{ photo.name }}">
+</div>
+
+<div class="card">
+  <form action="/photos/{{ photo.id }}/delete" method="post">
+    <button type="submit">Törlés</button>
+  </form>
+  <p><small>Csak belépve és csak a saját képedet tudod törölni.</small></p>
+</div>
+
+{% endblock %}
