@@ -10,7 +10,9 @@ from sqlmodel import Session, select
 from app.db import get_session
 from app.models import User, SessionToken
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from pwdlib import PasswordHash
+from pwdlib.hashers.bcrypt import BcryptHasher
+pwd_context = PasswordHash((BcryptHasher(),))
 
 COOKIE_NAME = "photoalbum_session"
 
