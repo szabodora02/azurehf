@@ -1,26 +1,31 @@
 import os
-from sqlmodel import SQLModel, create_engine, Session
 from pathlib import Path
+from sqlmodel import SQLModel, create_engine, Session
 
-# 1. Kiszámoljuk az útvonalat
-BASE_DIR = Path(__file__).resolve().parent
+if os.getenv("WEBSITE_SITE_NAME"):
+    PERSISTENT_DIR = Path("/home/data")
+else:
+    PERSISTENT_DIR = Path(__file__).resolve().parent.parent / "data"
 
-# 2. Beállítjuk a data_dir-t
-data_dir_str = os.getenv("APP_DATA_DIR", str(BASE_DIR))
-data_dir = Path(data_dir_str)
+PERSISTENT_DIR.mkdir(parents=True, exist_ok=True)
+default_sqlite_path = PERSISTENT_DIR / "app.db"
 
-# 3. ITT A LÉNYEG: Létrehozzuk a mappát, ha nem létezik!
-data_dir.mkdir(parents=True, exist_ok=True)
-
-# 4. Összerakjuk az URL-t
-default_sqlite_path = data_dir / "app.db"
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{default_sqlite_path}")
 
-# SQLite-nál kell ez a connect_args
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+connect_args = {
+    "check_same_thread": False,
+    "timeout": 15
+} if DATABASE_URL.startswith("sqlite") else {}
 
-engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
+engine = create_engine(
+    DATABASE_URL, 
+    echo=False, 
+    connect_args=connect_args,
+    pool_recycle=3600,
+    pool_pre_ping=True
+)
 
+# ... a függvények maradnak ...
 def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
 

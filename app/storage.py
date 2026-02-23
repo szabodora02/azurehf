@@ -1,18 +1,19 @@
 import os
 import secrets
 from pathlib import Path
-
 from fastapi import UploadFile, HTTPException
 
-# 1. Kiszámoljuk a pontos fizikai útvonalat ugyanúgy, mint a main.py-ban!
-BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parent
+if os.getenv("WEBSITE_SITE_NAME"):
+    PERSISTENT_DIR = Path("/home/data")
+else:
+    PERSISTENT_DIR = Path(__file__).resolve().parent.parent / "data"
 
-MEDIA_DIR = Path(os.getenv("MEDIA_DIR", str(ROOT_DIR / "media")))
+MEDIA_DIR = PERSISTENT_DIR / "media"
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 
+# ... a függvények maradnak ...
 # ... (a fájl többi része változatlan marad)
 
 def _safe_ext(filename: str) -> str:

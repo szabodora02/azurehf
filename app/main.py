@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -16,24 +17,25 @@ from app.storage import save_upload, delete_file
 from app.models import User
 from app.auth import hash_password, verify_password, create_session, delete_session, get_current_user, COOKIE_NAME, get_optional_current_user
 
-
 app = FastAPI(title="Photo Album")
 
-# --- ÚTVONALAK ÉS MAPPÁK LÉTREHOZÁSA (AZURE KOMPATIBILIS) ---
-# BASE_DIR az 'app' mappa, ahol ez a main.py fájl fizikailag található
+# --- VÉGLEGES ÚTVONALAK (AZURE PERSISTENCE) ---
 BASE_DIR = Path(__file__).resolve().parent
-# ROOT_DIR a projekt gyökérkönyvtára (egy szinttel feljebb)
-ROOT_DIR = BASE_DIR.parent
+
+# Ha Azure-on futunk, a védett /home/data mappát használjuk a képeknek
+if os.getenv("WEBSITE_SITE_NAME"):
+    PERSISTENT_DIR = Path("/home/data")
+else:
+    # Lokális futtatás esetén a projekt gyökerében lévő 'data' mappát
+    PERSISTENT_DIR = BASE_DIR.parent / "data"
 
 STATIC_DIR = BASE_DIR / "static"
-MEDIA_DIR = ROOT_DIR / "media"
 TEMPLATE_DIR = BASE_DIR / "templates"
+MEDIA_DIR = PERSISTENT_DIR / "media"
 
-# Mappák létrehozása, ha nem léteznének (ez menti meg az Azure deploymentet!)
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Static + Media kiszolgálás (abszolút útvonalakkal)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
 
