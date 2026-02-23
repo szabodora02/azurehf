@@ -7,7 +7,7 @@ Ez a projekt egy felhőalapú (PaaS) fényképalbum webalkalmazás, amely a 4. b
 A működő alkalmazás az alábbi linken érhető el:
 **[https://photo-apc9dee7gjg9hwa5.germanywestcentral-01.azurewebsites.net]**
 
-## ⚙️ Megvalósított Funkciók (1. Fázis)
+##Megvalósított Funkciók (1. Fázis)
 
 A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálásra:
 
@@ -22,7 +22,7 @@ A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálás
 * **Kép megtekintése:**
   * A listában a "Megnyitás" gombra/linkre kattintva egy részletező oldal nyílik meg, ahol megjelenik maga a fizikai képfájl, a fotó neve, dátuma, és a tulajdonos számára a törlés funkció.
 
-##Alkalmazott Technológiák
+Alkalmazott Technológiák
 
 * **Backend:** Python 3.12, FastAPI
 * **Adatbázis & ORM:** SQLite, SQLModel (SQLAlchemy)
