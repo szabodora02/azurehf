@@ -14,7 +14,8 @@ from app.db import create_db_and_tables, get_session
 from app.models import Photo
 from app.storage import save_upload, delete_file
 from app.models import User
-from app.auth import hash_password, verify_password, create_session, delete_session, get_current_user, COOKIE_NAME
+from app.auth import hash_password, verify_password, create_session, delete_session, get_current_user, COOKIE_NAME, get_optional_current_user
+
 
 app = FastAPI(title="Photo Album")
 
@@ -107,6 +108,7 @@ def list_photos(
 def photo_detail(
     request: Request,
     photo_id: int,
+    user: Optional[User] = Depends(get_optional_current_user),
     session: Session = Depends(get_session),
 ):
     photo = session.get(Photo, photo_id)
@@ -128,6 +130,7 @@ def photo_detail(
                 "image_url": image_url,
                 "owner_id": photo.owner_id,
             },
+            "user": user,
         },
     )
 

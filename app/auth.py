@@ -65,3 +65,18 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     return user
+def get_optional_current_user(
+    request: Request,
+    db: Session = Depends(get_session),
+) -> Optional[User]:
+    session_id = request.cookies.get(COOKIE_NAME)
+    if not session_id:
+        return None
+    try:
+        sid = uuid.UUID(session_id)
+    except ValueError:
+        return None
+    token = db.get(SessionToken, sid)
+    if not token:
+        return None
+    return db.get(User, token.user_id)

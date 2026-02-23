@@ -4,11 +4,16 @@ from pathlib import Path
 
 from fastapi import UploadFile, HTTPException
 
-MEDIA_DIR = Path(os.getenv("MEDIA_DIR", "./media"))
+# 1. Kiszámoljuk a pontos fizikai útvonalat ugyanúgy, mint a main.py-ban!
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+
+MEDIA_DIR = Path(os.getenv("MEDIA_DIR", str(ROOT_DIR / "media")))
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 
+# ... (a fájl többi része változatlan marad)
 
 def _safe_ext(filename: str) -> str:
     ext = Path(filename.lower()).suffix
