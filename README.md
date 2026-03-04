@@ -1,13 +1,13 @@
 # azurehf
-# Fényképalbum Webalkalmazás (4. Feladat)
+# Fényképalbum Webalkalmazás (5. Feladat - Végleges változat)
 
-Ez a projekt egy felhőalapú (PaaS) fényképalbum webalkalmazás, amely a 4. beadandó feladat követelményei alapján készült. Az alkalmazás jelenlegi verziója fájlalapú (SQLite) adatbázist használ, amely az Azure környezetben egy perzisztens tárolón fut.
+Ez a projekt egy felhőalapú (PaaS) fényképalbum webalkalmazás, amely az 5. beadandó feladat követelményei alapján készült. Az alkalmazás ezen végleges verziója szétválasztott architektúrát használ: a webkiszolgáló az Azure környezetben fut, míg az adatok egy különálló, felhős PostgreSQL adatbázis-szerveren (Neon.tech) kapnak helyet.
 
-##Élő alkalmazás (PaaS környezet)
+## Élő alkalmazás (PaaS környezet)
 A működő alkalmazás az alábbi linken érhető el:
-**[https://photo-apc9dee7gjg9hwa5.germanywestcentral-01.azurewebsites.net]**
+[https://photo-apc9dee7gjg9hwa5.germanywestcentral-01.azurewebsites.net](https://photo-apc9dee7gjg9hwa5.germanywestcentral-01.azurewebsites.net)
 
-##Megvalósított Funkciók (1. Fázis)
+## Megvalósított Funkciók
 
 A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálásra:
 
@@ -22,14 +22,19 @@ A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálás
 * **Kép megtekintése:**
   * A listában a "Megnyitás" gombra/linkre kattintva egy részletező oldal nyílik meg, ahol megjelenik maga a fizikai képfájl, a fotó neve, dátuma, és a tulajdonos számára a törlés funkció.
 
-Alkalmazott Technológiák
+## Alkalmazott Technológiák
 
 * **Backend:** Python 3.12, FastAPI
-* **Adatbázis & ORM:** SQLite, SQLModel (SQLAlchemy)
+* **Adatbázis & ORM:** PostgreSQL, SQLModel (SQLAlchemy), `psycopg2-binary`
 * **Biztonság:** Jelszó hashelés (`pwdlib`, `bcrypt`)
 * **Frontend:** HTML, Jinja2 sablonok (Templates)
 * **Kiszolgáló szerver:** Gunicorn, Uvicorn (worker)
-* **Felhőkörnyezet (PaaS):** Microsoft Azure App Service (Linux)
+* **Felhőkörnyezet (Web):** Microsoft Azure App Service (Linux PaaS)
+* **Felhőkörnyezet (Adatbázis):** Neon.tech (Serverless PostgreSQL PaaS)
 
-##Adatbázis és Fájltárolás (Azure Architektúra)
-Mivel az Azure App Service ideiglenes fájlrendszert használ az alkalmazás futtatásához, az alkalmazás kódja fel van készítve arra, hogy felismerje a felhős környezetet. Azure-on futva a kód az adatbázist (`app.db`) és a feltöltött képeket (`media` mappa) automatikusan a soha nem törlődő `/home/data` perzisztens könyvtárba menti, így elkerülve az adatvesztést a szerver újraindulása esetén.
+## Adatbázis és Fájltárolás (Szétválasztott Architektúra)
+
+Az 5. feladat követelményeinek megfelelően az alkalmazás architektúrája szétválasztásra került:
+
+1. **Adatbázis (Relációs adatok):** Az alkalmazás már nem lokális SQLite fájlt használ, hanem egy különálló **PostgreSQL** szerverhez csatlakozik a Neon.tech felhőjében. A kapcsolati adatokat a kód az Azure App Service környezeti változóiból (`DATABASE_URL`) olvassa ki, így a hitelesítő adatok nem szerepelnek a forráskódban.
+2. **Képtárolás (Fizikai fájlok):** Mivel az Azure App Service ideiglenes fájlrendszert használ, a feltöltött képek (`media` mappa) mentése automatikusan a soha nem törlődő `/home/data/media` perzisztens könyvtárba történik, elkerülve az adatvesztést a szerver újraindulása esetén.
