@@ -1,7 +1,7 @@
 # azurehf
-# Fényképalbum Webalkalmazás (5. Feladat - Végleges változat)
+# Fényképalbum Webalkalmazás
 
-Ez a projekt egy felhőalapú (PaaS) fényképalbum webalkalmazás, amely az 5. beadandó feladat követelményei alapján készült. Az alkalmazás ezen végleges verziója szétválasztott architektúrát használ: a webkiszolgáló az Azure környezetben fut, míg az adatok egy különálló, felhős PostgreSQL adatbázis-szerveren (Neon.tech) kapnak helyet.
+Ez a projekt egy felhőalapú (PaaS) fényképalbum webalkalmazás. Az alkalmazás ezen végleges verziója szétválasztott architektúrát használ (Azure App Service + Neon.tech PostgreSQL), és fel van készítve a nagy terhelés alatti automatikus felskálázódásra.
 
 ## Élő alkalmazás (PaaS környezet)
 A működő alkalmazás az alábbi linken érhető el:
@@ -11,7 +11,7 @@ A működő alkalmazás az alábbi linken érhető el:
 
 A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálásra:
 
-* **Felhasználókezelés:** * Regisztráció, bejelentkezés és kijelentkezés (cookie-alapú session kezeléssel).
+* **Felhasználókezelés:** Regisztráció, bejelentkezés és kijelentkezés (cookie-alapú session kezeléssel).
 * **Fényképek kezelése (jogosultsághoz kötve):**
   * Képek feltöltése és törlése. *(Csak bejelentkezett felhasználók számára elérhető, és mindenki csak a saját képét törölheti).*
 * **Metaadatok:**
@@ -31,6 +31,7 @@ A feladatkiírásnak megfelelően az alábbi funkciók kerültek implementálás
 * **Kiszolgáló szerver:** Gunicorn, Uvicorn (worker)
 * **Felhőkörnyezet (Web):** Microsoft Azure App Service (Linux PaaS)
 * **Felhőkörnyezet (Adatbázis):** Neon.tech (Serverless PostgreSQL PaaS)
+* **Terheléspróba & DevOps:** Locust (Azure Cloud Shell-ből futtatva), Azure Autoscale
 
 ## Adatbázis és Fájltárolás (Szétválasztott Architektúra)
 
@@ -38,3 +39,38 @@ Az 5. feladat követelményeinek megfelelően az alkalmazás architektúrája sz
 
 1. **Adatbázis (Relációs adatok):** Az alkalmazás már nem lokális SQLite fájlt használ, hanem egy különálló **PostgreSQL** szerverhez csatlakozik a Neon.tech felhőjében. A kapcsolati adatokat a kód az Azure App Service környezeti változóiból (`DATABASE_URL`) olvassa ki, így a hitelesítő adatok nem szerepelnek a forráskódban.
 2. **Képtárolás (Fizikai fájlok):** Mivel az Azure App Service ideiglenes fájlrendszert használ, a feltöltött képek (`media` mappa) mentése automatikusan a soha nem törlődő `/home/data/media` perzisztens könyvtárba történik, elkerülve az adatvesztést a szerver újraindulása esetén.
+
+---
+
+## Automatikus Skálázódás és Terheléspróba
+
+### 1. Az automatikus skálázódás (Autoscale) konfigurációja
+A fényképalbum alkalmazást kiszolgáló Azure App Service környezetet egy magasabb (Production) csomagra skáláztuk fel a teszt idejére, hogy elérhetővé váljon az automatikus méretezés funkció. 
+
+**Példánykorlátok (Instance limits):**
+* Minimum példányszám: 1
+* Maximum példányszám: 3
+* Alapértelmezett: 1
+
+**Méretezési szabályok (Scale rules):**
+1. **Felskálázás (Scale out):** Ha a CPU terheltség átlaga meghaladja az 5%-ot legalább 1 percig, az alkalmazás automatikusan elindít +1 példányt. *(Megjegyzés: A küszöbértéket szándékosan alacsonyra vettük a laboratóriumi környezet miatt, mivel a FastAPI alkalmazás rendkívül erőforrás-hatékony).*
+2. **Visszaskálázás (Scale in):** Ha a CPU terheltség átlaga 30% alá esik legalább 5 percig, az alkalmazás leállít 1 példányt, ezzel optimalizálva a költségeket.
+
+### 2. A terheléspróba konfigurációja és eszközei
+A terheléspróbát nem lokális gépről, hanem **felhős környezetből (Azure Cloud Shell felügyelt Linux konténerből)** lett végrehajtva a hálózati sávszélesség-korlátok elkerülése végett. A teszteléshez a nyílt forráskódú **Locust** keretrendszert használtuk headless módban.
+
+* **Terhelési paraméterek:** 500 egyidejű felhasználó (Concurrency), 50 új felhasználó/másodperc indítási sebességgel (Spawn rate).
+* **Tesztesetek:** A szkript lefedi a fő funkciókat (regisztráció, belépés, lista folyamatos lekérése, rendezések, új memóriagenerált képek feltöltése és megnyitása).
+
+**A terheléspróba szkriptje: locustfile.py
+
+### 3. Eredmények és Felskálázódás
+A terheléspróba indítása után a szerver rövid idő alatt több mint 14 000 kérést dolgozott fel hibamentesen. A hirtelen megnövekedett forgalom hatására az Azure infrastruktúra érzékelte a CPU küszöbérték átlépését.
+
+Az Azure Portal *Run history* metrikái alapján egyértelműen igazolható, hogy az automatikus skálázó motor működésbe lépett, és az alkalmazást kiszolgáló aktív példányok (Instances) számát **1-ről 2-re növelte**, sikeresen elosztva a terhelést. 
+
+
+### 4. Tanulságok
+* **Kód optimalizáltsága:** A FastAPI és a szétválasztott felhős adatbázis (Neon.tech PostgreSQL) annyira jól bírta a terhelést, hogy a szerver CPU-ja önmagában nehezen érte el a magas határértékeket, így a teszteléshez a skálázási szabályokat "érzékenyebbre" kellett hangolni.
+* **Metrika késleltetés:** Az automatikus skálázás nem azonnali; a felhőszolgáltatónak időre van szüksége a megbízható CPU átlag kiszámításához, így kivédve a pillanatnyi forgalmi tüskék miatti felesleges felskálázásokat.
+* **Felhős tesztelés:** Egy reális terheléspróbát kizárólag felhőből érdemes indítani, elkerülve a lokális hálózatok szűk keresztmetszeteit.
