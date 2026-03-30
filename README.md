@@ -53,7 +53,7 @@ A fényképalbum alkalmazást kiszolgáló Azure App Service környezetet egy ma
 * Alapértelmezett: 1
 
 **Méretezési szabályok (Scale rules):**
-1. **Felskálázás (Scale out):** Ha a CPU terheltség átlaga meghaladja az 5%-ot legalább 1 percig, az alkalmazás automatikusan elindít +1 példányt. *(Megjegyzés: A küszöbértéket szándékosan alacsonyra vettük a laboratóriumi környezet miatt, mivel a FastAPI alkalmazás rendkívül erőforrás-hatékony).*
+1. **Felskálázás (Scale out):** Ha a CPU terheltség átlaga meghaladja az 5%-ot legalább 1 percig, az alkalmazás automatikusan elindít +1 példányt. *(Megjegyzés: A küszöbértéket szándékosan alacsony, mivel a FastAPI alkalmazás rendkívül erőforrás-hatékony).*
 2. **Visszaskálázás (Scale in):** Ha a CPU terheltség átlaga 30% alá esik legalább 5 percig, az alkalmazás leállít 1 példányt, ezzel optimalizálva a költségeket.
 
 ### 2. A terheléspróba konfigurációja és eszközei
