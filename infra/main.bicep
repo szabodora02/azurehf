@@ -3,8 +3,9 @@ param location string = 'germanywestcentral'
 @secure()
 param databaseUrl string
 
+// Itt a pontos név, amit a korábbi képeiden láttunk az Azure-ban!
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'ASP-${webAppName}'
+  name: 'ASP-hf-860e'
   location: location
   kind: 'linux'
   properties: {
