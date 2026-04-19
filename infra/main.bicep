@@ -1,5 +1,5 @@
 param webAppName string
-param location string = resourceGroup().location
+param location string = 'germanywestcentral'
 @secure()
 param databaseUrl string
 
